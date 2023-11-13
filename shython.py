@@ -16,7 +16,7 @@ def main(filename):
         print(line)
     syntax = shy_parser.parse_file(tokens)
     print(syntax)
-    # interpreter.interpret(syntax)
+    interpreter.interpret(syntax)
 
 
 if __name__ == "__main__":

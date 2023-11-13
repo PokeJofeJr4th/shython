@@ -55,27 +55,34 @@ def group_blocks(lines, index=0, indent=0):
             # line_indent == indent
             statements.append(line[line_indent:])
         index += 1
-    return statements
+    return index, statements
 
 
 def parse_file(lines):
-    lines = group_blocks(lines)
+    _, lines = group_blocks(lines)
     index = 0
     statements = []
     while index < len(lines):
         index, statement = parse_statement(lines, index)
-        statements.append(statement)
+        if statement is not None:
+            statements.append(statement)
     return statements
+
+
+BLOCK_TYPES = ["while", "if"]
 
 
 def parse_statement(lines, index=0):
     statement = lines[index]
-    if isinstance(statement[0], list):
+    first_item = statement[0]
+    if isinstance(first_item, list):
         raise IndentationError(f"Unexpected indent; {statement}")
-    elif isinstance(statement[0], lexer.Identifier) and statement[0].name == "while":
+    elif isinstance(first_item, lexer.Identifier) and first_item.name in BLOCK_TYPES:
         _, condition = make_operation(1, statement)
         body = parse_file(lines[index + 1])
-        return index + 2, Block("while", condition, body)
+        return index + 2, Block(first_item.name, condition, body)
+    elif lexer.compare_token(first_item, "\n"):
+        return index + 1, None
     else:
         _, statement = make_operation(0, statement)
         return index + 1, statement
@@ -91,14 +98,21 @@ def get_one_item(index, tokens):
         raise SyntaxError(f"Invalid token at {index} of {tokens}")
 
 
-OPERATIONS = [["+"], ["<"], ["="]]
+OPERATIONS = [["<", ">", "!", "="], ["+", "-"], ["*", "/", "%"]]
 
 
 def make_operation(index, tokens, priority=0):
     if priority >= len(OPERATIONS):
-        return get_one_item(index, tokens)
+        index, left = get_one_item(index, tokens)
+        while index < len(tokens) and lexer.compare_token(tokens[index], "("):
+            index, argument = make_operation(index + 1, tokens)
+            index += 1
+            left = FunctionCall(left, argument)
+        return index, left
     index, left = make_operation(index, tokens, priority + 1)
     operations = OPERATIONS[priority]
+    if index >= len(tokens):
+        return index, left
     token = tokens[index]
     while isinstance(token, lexer.Symbol) and token.symbol in operations:
         index += 1
@@ -106,12 +120,9 @@ def make_operation(index, tokens, priority=0):
         if lexer.compare_token(tokens[index], "="):
             operation += "="
             index += 1
+        if operation == "!":
+            raise SyntaxError("Invalid operation `!`")
         index, right = make_operation(index, tokens, priority + 1)
         left = Operation(left, operation, right)
         token = tokens[index]
-    if priority == 0:
-        while index < len(tokens) and lexer.compare_token(tokens[index], "("):
-            index, argument = make_operation(index + 1, tokens)
-            index += 1
-            left = FunctionCall(left, argument)
     return index, left
