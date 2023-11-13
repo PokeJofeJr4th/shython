@@ -36,6 +36,15 @@ class FunctionCall:
         return f"{self.function}({self.argument})"
 
 
+def is_literal(syntax):
+    return (
+        isinstance(syntax, int)
+        or isinstance(syntax, float)
+        or isinstance(syntax, str)
+        or isinstance(syntax, bool)
+    )
+
+
 def group_blocks(lines, index=0, indent=0):
     statements = []
     while index < len(lines):
@@ -64,6 +73,9 @@ def parse_file(lines):
     statements = []
     while index < len(lines):
         index, statement = parse_statement(lines, index)
+        statement = optimize_syntax(statement)
+        if isinstance(statement, list):
+            statements.extend(statement)
         if statement is not None:
             statements.append(statement)
     return statements
@@ -126,3 +138,33 @@ def make_operation(index, tokens, priority=0):
         left = Operation(left, operation, right)
         token = tokens[index]
     return index, left
+
+
+def optimize_syntax(syntax):
+    if isinstance(syntax, Operation):
+        syntax.left = optimize_syntax(syntax.left)
+        syntax.right = optimize_syntax(syntax.right)
+        if is_literal(syntax.left) and is_literal(syntax.right):
+            if syntax.operation == "+":
+                return syntax.left + syntax.right
+            elif syntax.operation == "-":
+                return syntax.left - syntax.right
+            elif syntax.operation == "*":
+                return syntax.left * syntax.right
+            elif syntax.operation == "/":
+                return syntax.left / syntax.right
+            elif syntax.operation == "%":
+                return syntax.left % syntax.right
+            elif syntax.operation == "<":
+                return syntax.left < syntax.right
+            elif syntax.operation == ">":
+                return syntax.left > syntax.right
+            elif syntax.operation == "<=":
+                return syntax.left <= syntax.right
+            elif syntax.operation == ">=":
+                return syntax.left >= syntax.right
+            elif syntax.operation == "==":
+                return syntax.left == syntax.right
+            elif syntax.operation == "!=":
+                return syntax.left != syntax.right
+    return syntax
