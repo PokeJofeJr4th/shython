@@ -1,4 +1,4 @@
-count = int(input(0))
+count = int(input(chr(62) + chr(32)))
 fib0 = 1
 fib1 = 1
 print(1)

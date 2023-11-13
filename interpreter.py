@@ -3,7 +3,7 @@ import shy_parser
 
 
 def interpret(source):
-    variables = {"print": print, "int": int, "input": input}
+    variables = {"print": print, "int": int, "input": input, "chr": chr}
     inner_interpret(source, variables)
 
 

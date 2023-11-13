@@ -1,4 +1,4 @@
-value = int(input(0))
+value = int(input(chr(62) + chr(32)))
 print(value)
 while value != 1:
     if value % 2 == 1:
