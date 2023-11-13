@@ -1,4 +1,15 @@
+"""
+# Shython Lexer
+
+Turns a list of file lines into a list of tokens
+"""
+
+
 class Identifier:
+    """
+    A token representing an identifier
+    """
+
     __slots__ = ["name"]
 
     def __init__(self, name):
@@ -9,6 +20,10 @@ class Identifier:
 
 
 class Symbol:
+    """
+    A token representing a miscellaneous symbol
+    """
+
     __slots__ = ["symbol"]
 
     def __init__(self, symbol):
@@ -19,6 +34,9 @@ class Symbol:
 
 
 def compare_token(token, compare):
+    """
+    Check if a symbol matches a certain string
+    """
     if not isinstance(token, Symbol):
         return False
     return token.symbol == compare
@@ -33,6 +51,9 @@ ASCII_9 = ord("9")
 
 
 def is_alphabetic(a_char):
+    """
+    check if a character is a letter or "_"
+    """
     return (
         ASCII_A <= ord(a_char) <= ASCII_Z
         or ASCII_A_LOWER <= ord(a_char) <= ASCII_Z_LOWER
@@ -41,14 +62,23 @@ def is_alphabetic(a_char):
 
 
 def is_numeric(a_char):
+    """
+    check if a character is a number
+    """
     return ASCII_0 <= ord(a_char) <= ASCII_9
 
 
 def is_alphanumeric(a_char):
+    """
+    check if a character is a letter, "_", or number
+    """
     return is_alphabetic(a_char) or is_numeric(a_char)
 
 
 def is_token(a_char):
+    """
+    Check if a character is a symbol
+    """
     return (
         33 <= ord(a_char) <= 47
         or 58 <= ord(a_char) <= 64
@@ -58,6 +88,9 @@ def is_token(a_char):
 
 
 def make_tokens(a_string):
+    """
+    Turn a string into a list of tokens
+    """
     index = 0
     length = len(a_string)
     tokens = []

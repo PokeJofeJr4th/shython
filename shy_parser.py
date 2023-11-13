@@ -2,6 +2,10 @@ import lexer
 
 
 class Operation:
+    """
+    Any kind of binary operation
+    """
+
     __slots__ = ["left", "right", "operation"]
 
     def __init__(self, left, operation, right):
@@ -14,6 +18,10 @@ class Operation:
 
 
 class Block:
+    """
+    An indented block of code with a qualifier
+    """
+
     __slots__ = ["block_type", "condition", "body"]
 
     def __init__(self, block_type, condition, body) -> None:
@@ -26,6 +34,10 @@ class Block:
 
 
 class FunctionCall:
+    """
+    Callling a function
+    """
+
     __slots__ = ["function", "argument"]
 
     def __init__(self, function, argument) -> None:
@@ -37,15 +49,16 @@ class FunctionCall:
 
 
 def is_literal(syntax):
-    return (
-        isinstance(syntax, int)
-        or isinstance(syntax, float)
-        or isinstance(syntax, str)
-        or isinstance(syntax, bool)
-    )
+    """
+    Check if a syntax element is a literal value that can be evaluated at compile time
+    """
+    return isinstance(syntax, (int, float, str, bool))
 
 
 def group_blocks(lines, index=0, indent=0):
+    """
+    Group levels of indentation
+    """
     statements = []
     while index < len(lines):
         line = lines[index]
@@ -57,7 +70,7 @@ def group_blocks(lines, index=0, indent=0):
                 break
         if line_indent < indent:
             return index - 1, statements
-        elif line_indent > indent:
+        if line_indent > indent:
             index, statement = group_blocks(lines, index, line_indent)
             statements.append(statement)
         else:
@@ -68,6 +81,9 @@ def group_blocks(lines, index=0, indent=0):
 
 
 def parse_file(lines):
+    """
+    Parse a file of tokens
+    """
     _, lines = group_blocks(lines)
     index = 0
     statements = []
@@ -85,35 +101,42 @@ BLOCK_TYPES = ["while", "if"]
 
 
 def parse_statement(lines, index=0):
+    """
+    Parse a single line of Shython code
+    """
     statement = lines[index]
     first_item = statement[0]
     if isinstance(first_item, list):
         raise IndentationError(f"Unexpected indent; {statement}")
-    elif isinstance(first_item, lexer.Identifier) and first_item.name in BLOCK_TYPES:
+    if isinstance(first_item, lexer.Identifier) and first_item.name in BLOCK_TYPES:
         _, condition = make_operation(1, statement)
         body = parse_file(lines[index + 1])
         return index + 2, Block(first_item.name, condition, body)
-    elif lexer.compare_token(first_item, "\n"):
+    if lexer.compare_token(first_item, "\n"):
         return index + 1, None
-    else:
-        _, statement = make_operation(0, statement)
-        return index + 1, statement
+    _, statement = make_operation(0, statement)
+    return index + 1, statement
 
 
 def get_one_item(index, tokens):
+    """
+    Take the smallest unit of syntax possible
+    """
     token = tokens[index]
     if isinstance(token, lexer.Identifier):
         return index + 1, token
-    elif isinstance(token, int):
+    if is_literal(token):
         return index + 1, token
-    else:
-        raise SyntaxError(f"Invalid token at {index} of {tokens}")
+    raise SyntaxError(f"Invalid token at {index} of {tokens}")
 
 
 OPERATIONS = [["<", ">", "!", "="], ["+", "-"], ["*", "/", "%"]]
 
 
 def make_operation(index, tokens, priority=0):
+    """
+    Parse a syntax operation
+    """
     if priority >= len(OPERATIONS):
         index, left = get_one_item(index, tokens)
         while index < len(tokens) and lexer.compare_token(tokens[index], "("):
@@ -141,30 +164,33 @@ def make_operation(index, tokens, priority=0):
 
 
 def optimize_syntax(syntax):
+    """
+    Optimize the syntax tree
+    """
     if isinstance(syntax, Operation):
         syntax.left = optimize_syntax(syntax.left)
         syntax.right = optimize_syntax(syntax.right)
         if is_literal(syntax.left) and is_literal(syntax.right):
             if syntax.operation == "+":
                 return syntax.left + syntax.right
-            elif syntax.operation == "-":
+            if syntax.operation == "-":
                 return syntax.left - syntax.right
-            elif syntax.operation == "*":
+            if syntax.operation == "*":
                 return syntax.left * syntax.right
-            elif syntax.operation == "/":
+            if syntax.operation == "/":
                 return syntax.left / syntax.right
-            elif syntax.operation == "%":
+            if syntax.operation == "%":
                 return syntax.left % syntax.right
-            elif syntax.operation == "<":
+            if syntax.operation == "<":
                 return syntax.left < syntax.right
-            elif syntax.operation == ">":
+            if syntax.operation == ">":
                 return syntax.left > syntax.right
-            elif syntax.operation == "<=":
+            if syntax.operation == "<=":
                 return syntax.left <= syntax.right
-            elif syntax.operation == ">=":
+            if syntax.operation == ">=":
                 return syntax.left >= syntax.right
-            elif syntax.operation == "==":
+            if syntax.operation == "==":
                 return syntax.left == syntax.right
-            elif syntax.operation == "!=":
+            if syntax.operation == "!=":
                 return syntax.left != syntax.right
     return syntax
