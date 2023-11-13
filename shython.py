@@ -15,6 +15,7 @@ def lex_file(filename):
     """
     Open a file and convert it to tokens
     """
+    # pylint: disable=unspecified-encoding
     with open(filename) as file:
         return [lexer.make_tokens(line) for line in file]
 

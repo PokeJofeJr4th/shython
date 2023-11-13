@@ -1,3 +1,10 @@
+"""
+# Shython Parser
+
+Parse shython tokens into a syntax tree
+"""
+# pylint: disable=too-few-public-methods
+
 import lexer
 
 
@@ -167,6 +174,7 @@ def optimize_syntax(syntax):
     """
     Optimize the syntax tree
     """
+    # pylint: disable=too-many-return-statements,too-many-branches
     if isinstance(syntax, Operation):
         syntax.left = optimize_syntax(syntax.left)
         syntax.right = optimize_syntax(syntax.right)

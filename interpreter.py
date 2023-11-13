@@ -31,6 +31,8 @@ COMPARISON_OPERATIONS = ["==", "<", "<=", ">", ">=", "!="]
 
 
 def interpret_syntax(syntax, variables):
+    # pylint: disable=too-many-return-statements
+    # pylint: disable=too-many-branches
     """
     Evaluate a single syntax element
     """
@@ -59,33 +61,33 @@ def interpret_syntax(syntax, variables):
             elif operation == "%=":
                 variables[syntax.left.name] %= value
             return None
-        else:
-            left = interpret_syntax(syntax.left, variables)
-            right = interpret_syntax(syntax.right, variables)
-            if operation == "==":
-                return left == right
-            if operation == "<":
-                return left < right
-            if operation == ">":
-                return left > right
-            if operation == "<=":
-                return left <= right
-            if operation == ">=":
-                return left >= right
-            if operation == "!=":
-                return left != right
-            if operation == "+":
-                return left + right
-            if operation == "-":
-                return left - right
-            if operation == "*":
-                return left * right
-            if operation == "/":
-                return left / right
-            if operation == "%":
-                return left % right
-            raise SyntaxError(f"Invalid operation: {operation}; {syntax}")
-    elif isinstance(syntax, shy_parser.Block):
+
+        left = interpret_syntax(syntax.left, variables)
+        right = interpret_syntax(syntax.right, variables)
+        if operation == "==":
+            return left == right
+        if operation == "<":
+            return left < right
+        if operation == ">":
+            return left > right
+        if operation == "<=":
+            return left <= right
+        if operation == ">=":
+            return left >= right
+        if operation == "!=":
+            return left != right
+        if operation == "+":
+            return left + right
+        if operation == "-":
+            return left - right
+        if operation == "*":
+            return left * right
+        if operation == "/":
+            return left / right
+        if operation == "%":
+            return left % right
+        raise SyntaxError(f"Invalid operation: {operation}; {syntax}")
+    if isinstance(syntax, shy_parser.Block):
         if syntax.block_type == "while":
             while interpret_syntax(syntax.condition, variables):
                 inner_interpret(syntax.body, variables)
@@ -95,14 +97,13 @@ def interpret_syntax(syntax, variables):
         else:
             raise SyntaxError(f"Invalid Block Type: {syntax.block_type}")
         return None
-    elif isinstance(syntax, shy_parser.FunctionCall):
+    if isinstance(syntax, shy_parser.FunctionCall):
         function = interpret_syntax(syntax.function, variables)
         argument = interpret_syntax(syntax.argument, variables)
         # print(syntax, syntax.function, syntax.argument, function, argument)
         return function(argument)
-    elif isinstance(syntax, lexer.Identifier):
+    if isinstance(syntax, lexer.Identifier):
         return variables[syntax.name]
-    elif isinstance(syntax, int):
+    if isinstance(syntax, int):
         return syntax
-    else:
-        raise SyntaxError(f"Invalid Syntax: {syntax}")
+    raise SyntaxError(f"Invalid Syntax: {syntax}")

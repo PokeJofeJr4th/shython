@@ -3,6 +3,7 @@
 
 Turns a list of file lines into a list of tokens
 """
+# pylint: disable=too-few-public-methods
 
 
 class Identifier:
