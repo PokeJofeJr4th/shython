@@ -58,11 +58,11 @@ class FunctionCall:
 syntax = Operation | FunctionCall | Block | int | str | bool | float | lexer.Identifier
 
 
-def is_literal(syntax):
+def is_literal(syn):
     """
     Check if a syntax element is a literal value that can be evaluated at compile time
     """
-    return isinstance(syntax, (int, float, str, bool))
+    return isinstance(syn, (int, float, str, bool))
 
 
 def group_blocks(lines, index=0, indent=0):
@@ -173,35 +173,35 @@ def make_operation(index: int, tokens: list[lexer.token], priority=0):
     return index, left
 
 
-def optimize_syntax(syntax: syntax | None) -> syntax | None:
+def optimize_syntax(syn: syntax | None) -> syntax | None:
     """
     Optimize the syntax tree
     """
     # pylint: disable=too-many-return-statements,too-many-branches
-    if isinstance(syntax, Operation):
-        syntax.left = optimize_syntax(syntax.left)
-        syntax.right = optimize_syntax(syntax.right)
-        if is_literal(syntax.left) and is_literal(syntax.right):
-            if syntax.operation == "+":
-                return syntax.left + syntax.right  # type: ignore
-            if syntax.operation == "-":
-                return syntax.left - syntax.right  # type: ignore
-            if syntax.operation == "*":
-                return syntax.left * syntax.right  # type: ignore
-            if syntax.operation == "/":
-                return syntax.left / syntax.right  # type: ignore
-            if syntax.operation == "%":
-                return syntax.left % syntax.right  # type: ignore
-            if syntax.operation == "<":
-                return syntax.left < syntax.right  # type: ignore
-            if syntax.operation == ">":
-                return syntax.left > syntax.right  # type: ignore
-            if syntax.operation == "<=":
-                return syntax.left <= syntax.right  # type: ignore
-            if syntax.operation == ">=":
-                return syntax.left >= syntax.right  # type: ignore
-            if syntax.operation == "==":
-                return syntax.left == syntax.right
-            if syntax.operation == "!=":
-                return syntax.left != syntax.right
-    return syntax
+    if isinstance(syn, Operation):
+        syn.left = optimize_syntax(syn.left)
+        syn.right = optimize_syntax(syn.right)
+        if is_literal(syn.left) and is_literal(syn.right):
+            if syn.operation == "+":
+                return syn.left + syn.right  # type: ignore
+            if syn.operation == "-":
+                return syn.left - syn.right  # type: ignore
+            if syn.operation == "*":
+                return syn.left * syn.right  # type: ignore
+            if syn.operation == "/":
+                return syn.left / syn.right  # type: ignore
+            if syn.operation == "%":
+                return syn.left % syn.right  # type: ignore
+            if syn.operation == "<":
+                return syn.left < syn.right  # type: ignore
+            if syn.operation == ">":
+                return syn.left > syn.right  # type: ignore
+            if syn.operation == "<=":
+                return syn.left <= syn.right  # type: ignore
+            if syn.operation == ">=":
+                return syn.left >= syn.right  # type: ignore
+            if syn.operation == "==":
+                return syn.left == syn.right
+            if syn.operation == "!=":
+                return syn.left != syn.right
+    return syn

@@ -45,13 +45,13 @@ ASCII_0 = ord("0")
 ASCII_9 = ord("9")
 
 
-def compare_symbol(token: token, compare: str) -> bool:
+def compare_symbol(tok: token, compare: str) -> bool:
     """
     Check if a symbol matches a certain string
     """
-    if not isinstance(token, Symbol):
+    if not isinstance(tok, Symbol):
         return False
-    return token.symbol == compare
+    return tok.symbol == compare
 
 
 def is_alphabetic(c: str) -> bool:
