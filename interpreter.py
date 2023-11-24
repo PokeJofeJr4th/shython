@@ -3,20 +3,29 @@
 
 Run Shython code that's been parsed already
 """
-
+from typing import Callable
 import lexer
 import shy_parser
 
+shython_value = int | float | str | Callable | type | None | bool
 
-def interpret(source):
+
+def interpret(source: list):
     """
     Interpret a whole program
     """
-    variables = {"print": print, "int": int, "input": input, "chr": chr}
+    variables: dict[str, shython_value] = {
+        "print": print,
+        "int": int,
+        "input": input,
+        "chr": chr,
+        "True": True,
+        "False": False,
+    }
     inner_interpret(source, variables)
 
 
-def inner_interpret(lines, variables):
+def inner_interpret(lines: list, variables: dict[str, shython_value]):
     """
     Interpret a block of code
     """
@@ -27,22 +36,17 @@ def inner_interpret(lines, variables):
         index += 1
 
 
-COMPARISON_OPERATIONS = ["==", "<", "<=", ">", ">=", "!="]
+ASSIGNMENT_OPERATIONS: list[str] = ["=", "+=", "-=", "*=", "/=", "%="]
 
 
-def interpret_syntax(syntax, variables):
-    # pylint: disable=too-many-return-statements
-    # pylint: disable=too-many-branches
+def interpret_syntax(syntax, variables: dict[str, shython_value]) -> shython_value:
+    # pylint: disable=too-many-return-statements,too-many-branches
     """
     Evaluate a single syntax element
     """
     if isinstance(syntax, shy_parser.Operation):
-        operation = syntax.operation
-        if (
-            operation == "="
-            or len(operation) == 2
-            and operation not in COMPARISON_OPERATIONS
-        ):
+        operation: str = syntax.operation
+        if operation in ASSIGNMENT_OPERATIONS:
             value = interpret_syntax(syntax.right, variables)
             if not isinstance(syntax.left, lexer.Identifier):
                 raise SyntaxError(
@@ -51,15 +55,15 @@ def interpret_syntax(syntax, variables):
             if operation == "=":
                 variables[syntax.left.name] = value
             elif operation == "+=":
-                variables[syntax.left.name] += value
+                variables[syntax.left.name] += value  # type: ignore
             elif operation == "-=":
-                variables[syntax.left.name] -= value
+                variables[syntax.left.name] -= value  # type: ignore
             elif operation == "*=":
-                variables[syntax.left.name] *= value
+                variables[syntax.left.name] *= value  # type: ignore
             elif operation == "/=":
-                variables[syntax.left.name] /= value
+                variables[syntax.left.name] /= value  # type: ignore
             elif operation == "%=":
-                variables[syntax.left.name] %= value
+                variables[syntax.left.name] %= value  # type: ignore
             return None
 
         left = interpret_syntax(syntax.left, variables)
@@ -67,25 +71,25 @@ def interpret_syntax(syntax, variables):
         if operation == "==":
             return left == right
         if operation == "<":
-            return left < right
+            return left < right  # type: ignore
         if operation == ">":
-            return left > right
+            return left > right  # type: ignore
         if operation == "<=":
-            return left <= right
+            return left <= right  # type: ignore
         if operation == ">=":
-            return left >= right
+            return left >= right  # type: ignore
         if operation == "!=":
             return left != right
         if operation == "+":
-            return left + right
+            return left + right  # type: ignore
         if operation == "-":
-            return left - right
+            return left - right  # type: ignore
         if operation == "*":
-            return left * right
+            return left * right  # type: ignore
         if operation == "/":
-            return left / right
+            return left / right  # type: ignore
         if operation == "%":
-            return left % right
+            return left % right  # type: ignore
         raise SyntaxError(f"Invalid operation: {operation}; {syntax}")
     if isinstance(syntax, shy_parser.Block):
         if syntax.block_type == "while":
@@ -101,7 +105,7 @@ def interpret_syntax(syntax, variables):
         function = interpret_syntax(syntax.function, variables)
         argument = interpret_syntax(syntax.argument, variables)
         # print(syntax, syntax.function, syntax.argument, function, argument)
-        return function(argument)
+        return function(argument)  # type: ignore
     if isinstance(syntax, lexer.Identifier):
         return variables[syntax.name]
     if isinstance(syntax, int):

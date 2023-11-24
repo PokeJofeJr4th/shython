@@ -55,6 +55,9 @@ class FunctionCall:
         return f"{self.function}({self.argument})"
 
 
+syntax = Operation | FunctionCall | Block | int | str | bool | float | lexer.Identifier
+
+
 def is_literal(syntax):
     """
     Check if a syntax element is a literal value that can be evaluated at compile time
@@ -71,7 +74,7 @@ def group_blocks(lines, index=0, indent=0):
         line = lines[index]
         line_indent = 0
         for token in line:
-            if lexer.compare_token(token, "\t"):
+            if lexer.compare_symbol(token, "\t"):
                 line_indent += 1
             else:
                 break
@@ -119,34 +122,34 @@ def parse_statement(lines, index=0):
         _, condition = make_operation(1, statement)
         body = parse_file(lines[index + 1])
         return index + 2, Block(first_item.name, condition, body)
-    if lexer.compare_token(first_item, "\n"):
+    if lexer.compare_symbol(first_item, "\n"):
         return index + 1, None
     _, statement = make_operation(0, statement)
     return index + 1, statement
 
 
-def get_one_item(index, tokens):
+def get_one_item(index: int, tokens: list[lexer.token]) -> tuple[int, syntax]:
     """
     Take the smallest unit of syntax possible
     """
-    token = tokens[index]
+    token: lexer.token = tokens[index]
     if isinstance(token, lexer.Identifier):
         return index + 1, token
     if is_literal(token):
-        return index + 1, token
+        return index + 1, token  # type: ignore
     raise SyntaxError(f"Invalid token at {index} of {tokens}")
 
 
 OPERATIONS = [["<", ">", "!", "="], ["+", "-"], ["*", "/", "%"]]
 
 
-def make_operation(index, tokens, priority=0):
+def make_operation(index: int, tokens: list[lexer.token], priority=0):
     """
     Parse a syntax operation
     """
     if priority >= len(OPERATIONS):
         index, left = get_one_item(index, tokens)
-        while index < len(tokens) and lexer.compare_token(tokens[index], "("):
+        while index < len(tokens) and lexer.compare_symbol(tokens[index], "("):
             index, argument = make_operation(index + 1, tokens)
             index += 1
             left = FunctionCall(left, argument)
@@ -159,7 +162,7 @@ def make_operation(index, tokens, priority=0):
     while isinstance(token, lexer.Symbol) and token.symbol in operations:
         index += 1
         operation = token.symbol
-        if lexer.compare_token(tokens[index], "="):
+        if lexer.compare_symbol(tokens[index], "="):
             operation += "="
             index += 1
         if operation == "!":
@@ -170,7 +173,7 @@ def make_operation(index, tokens, priority=0):
     return index, left
 
 
-def optimize_syntax(syntax):
+def optimize_syntax(syntax: syntax | None) -> syntax | None:
     """
     Optimize the syntax tree
     """
@@ -180,23 +183,23 @@ def optimize_syntax(syntax):
         syntax.right = optimize_syntax(syntax.right)
         if is_literal(syntax.left) and is_literal(syntax.right):
             if syntax.operation == "+":
-                return syntax.left + syntax.right
+                return syntax.left + syntax.right  # type: ignore
             if syntax.operation == "-":
-                return syntax.left - syntax.right
+                return syntax.left - syntax.right  # type: ignore
             if syntax.operation == "*":
-                return syntax.left * syntax.right
+                return syntax.left * syntax.right  # type: ignore
             if syntax.operation == "/":
-                return syntax.left / syntax.right
+                return syntax.left / syntax.right  # type: ignore
             if syntax.operation == "%":
-                return syntax.left % syntax.right
+                return syntax.left % syntax.right  # type: ignore
             if syntax.operation == "<":
-                return syntax.left < syntax.right
+                return syntax.left < syntax.right  # type: ignore
             if syntax.operation == ">":
-                return syntax.left > syntax.right
+                return syntax.left > syntax.right  # type: ignore
             if syntax.operation == "<=":
-                return syntax.left <= syntax.right
+                return syntax.left <= syntax.right  # type: ignore
             if syntax.operation == ">=":
-                return syntax.left >= syntax.right
+                return syntax.left >= syntax.right  # type: ignore
             if syntax.operation == "==":
                 return syntax.left == syntax.right
             if syntax.operation == "!=":
